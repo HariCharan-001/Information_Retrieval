@@ -175,10 +175,10 @@ class SearchEngine:
 		processedQueries = self.preprocessQueries(queries)
 
 		# spellcheck queries
-		spellcheckedQueries = self.spellCheckQueries(processedQueries)
+		# spellcheckedQueries = self.spellCheckQueries(processedQueries)
 
 		# Expand queries
-		processedQueries = self.expandQueries(spellcheckedQueries)
+		# processedQueries = self.expandQueries(processedQueries)
 
 		# Read documents
 		docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
@@ -228,10 +228,8 @@ class SearchEngine:
 		plt.legend()
 		plt.title("Evaluation Metrics - Cranfield Dataset")
 		plt.xlabel("k")
-		plt.savefig(args.out_folder + "eval_plot.png")
-		plt.show()
 
-		plt.savefig(args.out_folder + "plots/eval_plot.png")
+		plt.savefig("plots/eval_plot.png")
 		plt.close()
 
 		
