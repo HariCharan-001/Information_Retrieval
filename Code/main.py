@@ -285,7 +285,7 @@ if __name__ == "__main__":
 						help = "Take custom query as input")
 	parser.add_argument('-method',
                       default="lsa",
-                      help="lsa | glove")
+                      help="IDF | lsa | glove")
 	parser.add_argument('-ngram',
                       default="unigram",
                       help="unigram|bigram")

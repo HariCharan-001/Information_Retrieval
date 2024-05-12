@@ -1,4 +1,5 @@
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from itertools import chain
@@ -8,7 +9,7 @@ class InformationRetrieval():
     def __init__(self):
         self.index = None
 
-    def buildIndex(self, docs, docIDs):
+    def buildIndex(self, docs, docIDs, ngram_range, concepts=0):
         """
         Builds the document index in terms of the document
         IDs and stores it in the 'index' class variable
@@ -23,7 +24,7 @@ class InformationRetrieval():
         -------
         None
         """
-        self.count_vectorizer = CountVectorizer(ngram_range=(1,1))
+        self.tfidf_vectorizer = TfidfVectorizer(ngram_range=ngram_range)
         all_docs_combined = []
         for document in docs:
             all_sentences_combined = []
@@ -31,7 +32,7 @@ class InformationRetrieval():
                 all_sentences_combined.extend(sentence)
             all_docs_combined.append(all_sentences_combined)
         all_docs_combined = [' '.join(sentence) for sentence in all_docs_combined]
-        self.term_doc_freq = self.count_vectorizer.fit_transform(all_docs_combined)
+        self.term_doc_freq = self.tfidf_vectorizer.fit_transform(all_docs_combined)
         self.docIDs = docIDs
         self.index = self.term_doc_freq.T
 
