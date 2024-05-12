@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 dir_path_local = os.path.dirname(__file__)
@@ -45,3 +46,25 @@ def test_avg_sen_len_cranfield():
 
     print("Average Sentence Length in Cranfield Docs: ", avg_sen_len)
     print("Average Sentence Length in Cranfield Queries: ", avg_sen_len_query)
+
+def test_author_in_cranfield_queries():
+    docs = get_cranfield_docs()
+    authors = [doc['author'] for doc in docs]
+
+    queries = get_cranfield_queries()
+    queries = [query['query'] for query in queries]
+
+    distinct_tokens = set()
+    for author in authors:
+        tokens = re.split('[ .,]', author)
+        tokens = [' ' + token.lower() + ' ' for token in tokens if len(token) > 2 and token != "and"]
+
+        for token in tokens:
+            for query in queries:
+                if token in query:
+                    print("Author token found: ", token)
+                    print("Query: ", query)
+                    distinct_tokens.add(token)
+    
+
+    print("Distinct author tokens found in queries: ", distinct_tokens)
