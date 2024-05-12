@@ -10,6 +10,8 @@ from sys import version_info
 import argparse
 import json
 import matplotlib.pyplot as plt
+from spellchecker import SpellChecker
+spell = SpellChecker()
 
 # Input compatibility for Python 2 and Python 3
 if version_info.major == 3:
@@ -78,6 +80,9 @@ class SearchEngine:
 		"""
 		return self.stopwordRemover.fromList(text)
 
+	def spellCheckQueries(self, queries):
+		return [[[spell.correction(token) for token in sentence] for sentence in query] for query in queries]
+	
 	def expandQueries(self, queries):
 		"""
 		Call the required query expansion method
@@ -169,8 +174,11 @@ class SearchEngine:
 		# Process queries 
 		processedQueries = self.preprocessQueries(queries)
 
+		# spellcheck queries
+		spellcheckedQueries = self.spellCheckQueries(processedQueries)
+
 		# Expand queries
-		processedQueries = self.expandQueries(processedQueries)
+		processedQueries = self.expandQueries(spellcheckedQueries)
 
 		# Read documents
 		docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
