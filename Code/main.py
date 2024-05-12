@@ -6,6 +6,7 @@ from informationRetrieval import InformationRetrieval
 from QueryExpansion import QueryExpansion
 from evaluation import Evaluation
 from LSA import LSA
+from Glove import rank_documents
 from sys import version_info
 import argparse
 import json
@@ -24,7 +25,7 @@ elif version_info.major == 2:
 else:
     print ("Unknown python version - input function not safe")
 
-
+K_val = 10
 class SearchEngine:
 
 	def __init__(self, args):
@@ -187,17 +188,20 @@ class SearchEngine:
 		# Process documents
 		processedDocs = self.preprocessDocs(docs)
 
-		# Build document index
-		self.informationRetriever.buildIndex(processedDocs, doc_ids, self.ngram, self.concepts)
-		# Rank the documents for each query
-		doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
+		if(self.args.method != "glove"):
+			# Build document index
+			self.informationRetriever.buildIndex(processedDocs, doc_ids, self.ngram, self.concepts)
+			# Rank the documents for each query
+			doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
+		else:
+			doc_IDs_ordered = rank_documents(processedDocs, processedQueries, self.args.build_embeddings=="True")
 
 		# Read relevance judements
 		qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
 
 		# Calculate precision, recall, f-score, MAP and nDCG for k = 1 to 10
 		precisions, recalls, fscores, MAPs, nDCGs = [], [], [], [], []
-		for k in range(1, 11):
+		for k in range(1, K_val+1):
 			precision = self.evaluator.meanPrecision(
 				doc_IDs_ordered, query_ids, qrels, k)
 			precisions.append(precision)
@@ -220,11 +224,11 @@ class SearchEngine:
 				str(k) + " : " + str(MAP) + ", " + str(nDCG))
 
 		# Plot the metrics and save plot 
-		plt.plot(range(1, 11), precisions, label="Precision")
-		plt.plot(range(1, 11), recalls, label="Recall")
-		plt.plot(range(1, 11), fscores, label="F-Score")
-		plt.plot(range(1, 11), MAPs, label="MAP")
-		plt.plot(range(1, 11), nDCGs, label="nDCG")
+		plt.plot(range(1, K_val+1), precisions, label="Precision")
+		plt.plot(range(1, K_val+1), recalls, label="Recall")
+		plt.plot(range(1, K_val+1), fscores, label="F-Score")
+		plt.plot(range(1, K_val+1), MAPs, label="MAP")
+		plt.plot(range(1, K_val+1), nDCGs, label="nDCG")
 		plt.legend()
 		plt.title("Evaluation Metrics - Cranfield Dataset")
 		plt.xlabel("k")
@@ -281,7 +285,7 @@ if __name__ == "__main__":
 						help = "Take custom query as input")
 	parser.add_argument('-method',
                       default="lsa",
-                      help="lsa")
+                      help="lsa | glove")
 	parser.add_argument('-ngram',
                       default="unigram",
                       help="unigram|bigram")
@@ -291,6 +295,12 @@ if __name__ == "__main__":
 	parser.add_argument('-query_expansion',
 					  default= "True",
 					  help="Perform Query Expansion")
+	parser.add_argument('-spellcheck',
+					  default= "False",
+					  help="Perform Spellcheck")
+	parser.add_argument('-build_embeddings',
+					  default= "True",
+					  help="Build Glove Embeddings")
 	
 	# Parse the input arguments
 	args = parser.parse_args()

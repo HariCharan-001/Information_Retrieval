@@ -19,6 +19,28 @@ def get_cranfield_queries():
 		cran_queries = json.load(f)
 	return cran_queries
 
+def flatten_docs(docs):
+	flattened_docs = []
+	for doc in docs:
+		flattened_doc = []
+		for sentence in doc:
+			flattened_doc.extend(sentence)
+		
+		flattened_docs.append(flattened_doc)
+
+	return flattened_docs
+
+def flatten_queries(queries):
+	flattened_queries = []
+	for query in queries:
+		flattened_query = []
+		for sentence in query:
+			flattened_query.extend(sentence)
+		
+		flattened_queries.append(flattened_query)
+
+	return flattened_queries
+
 def process_docs(docs):
 	# from the Json, extract the title and body
 	processed_docs = []
@@ -85,6 +107,39 @@ def get_query_embeddings(queries):
 			query_embeddings.append(np.zeros(50))
 	
 	return query_embeddings
+
+def get_similar_docs(query, doc_embeddings):
+	similarities = np.dot(doc_embeddings, query) / (np.linalg.norm(doc_embeddings) * np.linalg.norm(query))
+	similarities = np.argsort(similarities)[::-1]
+
+	return similarities
+
+def rank_documents(docs, queries, build_embeddings):
+	load_Glove_embeddings_pretrained()
+	docs = flatten_docs(docs)
+	queries = flatten_queries(queries)
+
+	doc_embeddings = None
+	query_embeddings = None
+	if(build_embeddings):
+		doc_embeddings = get_doc_embeddings(docs)
+		np.save(os.path.join(dir_path, 'embeddings/doc_embeddings.npy'), doc_embeddings)
+		print("Computed Doc Embeddings")
+	else:
+		doc_embeddings = np.load(os.path.join(dir_path, 'embeddings/doc_embeddings.npy'))
+
+	if(build_embeddings):
+		query_embeddings = get_query_embeddings(queries)
+		np.save(os.path.join(dir_path, 'embeddings/query_embeddings.npy'), query_embeddings)
+		print("Computed Query Embeddings")
+	else:
+		query_embeddings = np.load(os.path.join(dir_path, 'embeddings/query_embeddings.npy'))
+
+	doc_ids_ordered = []
+	for query in query_embeddings:
+		doc_ids_ordered.append(get_similar_docs(query, doc_embeddings))
+
+	return doc_ids_ordered
 
 if __name__ == '__main__':
 	load_Glove_embeddings_pretrained()
