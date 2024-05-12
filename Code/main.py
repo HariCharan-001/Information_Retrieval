@@ -287,10 +287,10 @@ if __name__ == "__main__":
                       default="lsa",
                       help="IDF | lsa | glove")
 	parser.add_argument('-ngram',
-                      default="unigram",
-                      help="unigram|bigram")
+                      default="hybrid",
+                      help="unigram|bigram|hybrid")
 	parser.add_argument('-concepts',
-                      default= "250",
+                      default= "300",
                       help="concepts used by lsa")
 	parser.add_argument('-query_expansion',
 					  default= "True",
