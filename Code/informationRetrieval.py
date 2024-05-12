@@ -80,3 +80,4 @@ class InformationRetrieval():
                 ordered_docs_query.append(i[0])
             doc_IDs_ordered.append(ordered_docs_query)
         return doc_IDs_ordered
+    
