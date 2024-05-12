@@ -231,6 +231,9 @@ class SearchEngine:
 		plt.savefig(args.out_folder + "eval_plot.png")
 		plt.show()
 
+		plt.savefig(args.out_folder + "plots/eval_plot.png")
+		plt.close()
+
 		
 	def handleCustomQuery(self):
 		"""
