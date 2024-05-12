@@ -183,7 +183,7 @@ class SearchEngine:
 		# Read documents
 		docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
 		doc_ids, docs = [item["id"] for item in docs_json], \
-          [(item["body"] + (" " + item["title"])) for item in docs_json]
+          [(item["body"] + (". " + item["title"])) for item in docs_json]
 		# Process documents
 		processedDocs = self.preprocessDocs(docs)
 
