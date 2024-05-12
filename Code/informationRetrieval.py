@@ -66,7 +66,7 @@ class InformationRetrieval():
                 all_sentences_combined.extend(sentence)
             all_queries_combined.append(all_sentences_combined)
         all_queries_combined = [' '.join(sentence) for sentence in all_queries_combined]
-        query_vectorizer = self.count_vectorizer.transform(all_queries_combined)
+        query_vectorizer = self.tfidf_vectorizer.transform(all_queries_combined)
         query_vectors = self.tfidf_transformer.transform(query_vectorizer)
         similarity_values = cosine_similarity(query_vectors, tfidf)
         for value in similarity_values:
