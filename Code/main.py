@@ -247,35 +247,40 @@ class SearchEngine:
 		qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
 
 		# Calculate precision, recall, f-score, MAP and nDCG for k = 1 to 10
-		precisions, recalls, fscores, MAPs, nDCGs = [], [], [], [], []
-		for k in range(1, K_val+1):
+		self.precisions, self.recalls, self.fscores, self.MAPs, self.nDCGs = [], [], [], [], []
+		for k in range(1, 11):
 			precision = self.evaluator.meanPrecision(
 				doc_IDs_ordered, query_ids, qrels, k)
-			precisions.append(precision)
+			self.precisions.append(precision)
 			recall = self.evaluator.meanRecall(
 				doc_IDs_ordered, query_ids, qrels, k)
-			recalls.append(recall)
+			self.recalls.append(recall)
 			fscore = self.evaluator.meanFscore(
 				doc_IDs_ordered, query_ids, qrels, k)
-			fscores.append(fscore)
+			self.fscores.append(fscore)
 			print("Precision, Recall and F-score @ " +  
 				str(k) + " : " + str(precision) + ", " + str(recall) + 
 				", " + str(fscore))
 			MAP = self.evaluator.meanAveragePrecision(
 				doc_IDs_ordered, query_ids, qrels, k)
-			MAPs.append(MAP)
+			self.MAPs.append(MAP)
 			nDCG = self.evaluator.meanNDCG(
 				doc_IDs_ordered, query_ids, qrels, k)
-			nDCGs.append(nDCG)
+			self.nDCGs.append(nDCG)
 			print("MAP, nDCG @ " +  
 				str(k) + " : " + str(MAP) + ", " + str(nDCG))
+		
+		end_time = time.time()
+
+		ir_time = end_time - start_time
+		print(f"Information Retrieval process took {ir_time} seconds.")
 
 		# Plot the metrics and save plot 
-		plt.plot(range(1, K_val+1), precisions, label="Precision")
-		plt.plot(range(1, K_val+1), recalls, label="Recall")
-		plt.plot(range(1, K_val+1), fscores, label="F-Score")
-		plt.plot(range(1, K_val+1), MAPs, label="MAP")
-		plt.plot(range(1, K_val+1), nDCGs, label="nDCG")
+		plt.plot(range(1, K_val+1), self.precisions, label="Precision")
+		plt.plot(range(1, K_val+1), self.recalls, label="Recall")
+		plt.plot(range(1, K_val+1), self.fscores, label="F-Score")
+		plt.plot(range(1, K_val+1), self.MAPs, label="MAP")
+		plt.plot(range(1, K_val+1), self.nDCGs, label="nDCG")
 		plt.legend()
 		plt.title("Evaluation Metrics - Cranfield Dataset")
 		plt.xlabel("k")
@@ -292,8 +297,16 @@ class SearchEngine:
 		#Get query
 		print("Enter query below")
 		query = input()
-		# Process documents
+
+		# spellcheck queries, always True (not recommended for cranfield queries, only for custom queries)
+		self.args.spellcheck = "True"
+		processedQuery = self.spellCheckQueries([processedQuery])[0]
+
+		# Process query
 		processedQuery = self.preprocessQueries([query])[0]
+
+		# Expand query
+		processedQuery = self.expandQueries([processedQuery])[0]
 
 		# Read documents
 		docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]

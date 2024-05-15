@@ -1,4 +1,3 @@
-from util import *
 import sklearn
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -35,7 +34,7 @@ class LSA():
         self.svd = svd_model
         self.reduced_matrix = reduced_matrix
 
-    def rank(self, queries, spellcheck="False"):
+    def rank(self, queries):
         ranked_doc_ids = []
         all_queries_combined = []
         for query in queries:
@@ -45,8 +44,6 @@ class LSA():
             all_queries_combined.append(all_sentences_combined)
         all_queries_combined = [' '.join(sentence) for sentence in all_queries_combined]
 
-        if spellcheck != "False":
-            all_queries_combined = check(all_queries_combined)
         query_vectorizer = self.vectorizer.transform(all_queries_combined)
         query_vectors = self.svd.transform(query_vectorizer)
 
