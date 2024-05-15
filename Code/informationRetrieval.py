@@ -24,7 +24,7 @@ class InformationRetrieval():
         -------
         None
         """
-        self.tfidf_vectorizer = TfidfVectorizer(ngram_range=(1,1))
+        self.tfidf_vectorizer = TfidfVectorizer(ngram_range=ngram_range)
         all_docs_combined = []
         for document in docs:
             all_sentences_combined = []

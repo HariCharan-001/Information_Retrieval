@@ -10,13 +10,7 @@ class LSA():
         self.svd = None
         self.reduced_matrix = None
 
-    def buildIndex(self, documents, document_ids, ngram, concepts):
-        min_n = 1
-        max_n = 2
-        if ngram == 1:
-            max_n = 1
-        elif ngram == 2:
-            min_n = 2
+    def buildIndex(self, documents, document_ids, ngram_range=(1, 1), concepts=0):
         all_docs_combined = []
         for document in documents:
             all_sentences_combined = []
@@ -24,7 +18,7 @@ class LSA():
                 all_sentences_combined.extend(sentence)
             all_docs_combined.append(all_sentences_combined)
         all_docs_combined = [' '.join(sentence) for sentence in all_docs_combined]
-        tfidf_vectorizer = TfidfVectorizer(ngram_range=(min_n, max_n))
+        tfidf_vectorizer = TfidfVectorizer(ngram_range=ngram_range)
         term_document_matrix = tfidf_vectorizer.fit_transform(all_docs_combined)
         svd_model = TruncatedSVD(random_state=42, n_components=concepts)
         reduced_matrix = svd_model.fit_transform(term_document_matrix)

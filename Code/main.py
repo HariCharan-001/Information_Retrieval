@@ -51,12 +51,11 @@ class SearchEngine:
 
 		ngram = self.args.ngram
 		if ngram == "unigram":
-			ngram = 1
+			ngram = (1,1)
 		elif ngram == "bigram":
-			ngram = 2
+			ngram = (2,2)
 		elif ngram == "hybrid":
-			ngram = 1.5
- 
+			ngram = (1,2)
 
 		self.ngram = ngram
 		if self.args.method == "lsa":
@@ -199,9 +198,9 @@ class SearchEngine:
 		plt.xlabel("Number of Concepts")
 		plt.ylabel("Metric Value")
 		plt.xticks(np.arange(100, 1500, 200))
-		# plt.grid(True)
-		plt.savefig("plots/metrics_vs_concepts_plot.png")
-		plt.show()
+
+		plt.savefig("plots/metrics_vs_concepts_LSA.png")
+		plt.close()
 
 	def evaluateDataset(self):
 		"""
@@ -361,6 +360,9 @@ if __name__ == "__main__":
 	parser.add_argument('-build_embeddings',
 					  default= "True",
 					  help="Build Glove Embeddings")
+	parser.add_argument('-plot_concepts_graph',
+					  default= "False",
+					  help="Plot Evaluation Metrics vs Concepts graph")
 	
 	# Parse the input arguments
 	args = parser.parse_args()
@@ -374,4 +376,5 @@ if __name__ == "__main__":
 	else:
 		searchEngine.evaluateDataset()
 
-	searchEngine.plotMetricsByConcepts()
+	if args.plot_concepts_graph == "True":
+		searchEngine.plotMetricsByConcepts()
