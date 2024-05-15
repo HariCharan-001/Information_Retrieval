@@ -200,7 +200,7 @@ class SearchEngine:
 		plt.ylabel("Metric Value")
 		plt.xticks(np.arange(100, 1500, 200))
 		# plt.grid(True)
-		plt.savefig(self.args.out_folder + "metrics_vs_concepts_plot.png")
+		plt.savefig("plots/metrics_vs_concepts_plot.png")
 		plt.show()
 
 	def evaluateDataset(self):
@@ -374,4 +374,4 @@ if __name__ == "__main__":
 	else:
 		searchEngine.evaluateDataset()
 
-	# searchEngine.plotMetricsByConcepts()
+	searchEngine.plotMetricsByConcepts()
