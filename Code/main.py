@@ -10,9 +10,13 @@ from Glove import rank_documents
 from sys import version_info
 import argparse
 import json
+import time
 import matplotlib.pyplot as plt
+import numpy as np
 from spellchecker import SpellChecker
+
 spell = SpellChecker()
+K_val = 10
 
 # Input compatibility for Python 2 and Python 3
 if version_info.major == 3:
@@ -25,7 +29,6 @@ elif version_info.major == 2:
 else:
     print ("Unknown python version - input function not safe")
 
-K_val = 10
 class SearchEngine:
 
 	def __init__(self, args):
@@ -40,11 +43,20 @@ class SearchEngine:
 		self.ngram = None
 		self.concepts = int(self.args.concepts)
 
+		self.MAPs = []
+		self.nDCGs = []
+		self.precisions = []
+		self.recalls = []
+		self.fscores = []
+
 		ngram = self.args.ngram
 		if ngram == "unigram":
 			ngram = 1
 		elif ngram == "bigram":
 			ngram = 2
+		elif ngram == "hybrid":
+			ngram = 1.5
+ 
 
 		self.ngram = ngram
 		if self.args.method == "lsa":
@@ -82,13 +94,16 @@ class SearchEngine:
 		return self.stopwordRemover.fromList(text)
 
 	def spellCheckQueries(self, queries):
+		if self.args.spellcheck == "False":
+			return queries
+		
 		return [[[spell.correction(token) for token in sentence] for sentence in query] for query in queries]
 	
 	def expandQueries(self, queries):
 		"""
 		Call the required query expansion method
 		"""
-		if self.args.query_expansion == "True":
+		if self.args.qexpand == "True":
 			queries = QueryExpansion(queries)
 		return queries
 
@@ -158,6 +173,35 @@ class SearchEngine:
 		preprocessedDocs = stopwordRemovedDocs
 		return preprocessedDocs
 
+	def plotMetricsByConcepts(self):
+		concepts_range = range(100, 1500, 100)
+		MAPs, nDCGs, precisions, recalls, fscores = [], [], [], [], []
+
+		for concepts in concepts_range:
+			self.concepts = concepts
+			self.evaluateDataset()
+			
+			# Store evaluation metrics
+			MAPs.append(self.MAPs[-1])
+			nDCGs.append(self.nDCGs[-1])
+			precisions.append(self.precisions[-1])
+			recalls.append(self.recalls[-1])
+			fscores.append(self.fscores[-1])
+
+		# Plotting
+		plt.plot(concepts_range, precisions, label="Precision")
+		plt.plot(concepts_range, recalls, label="Recall")
+		plt.plot(concepts_range, fscores, label="F-score")
+		plt.plot(concepts_range, MAPs, label="MAP")
+		plt.plot(concepts_range, nDCGs, label="nDCG")
+		plt.legend()
+		plt.title("Evaluation Metrics vs. Concepts")
+		plt.xlabel("Number of Concepts")
+		plt.ylabel("Metric Value")
+		plt.xticks(np.arange(100, 1500, 200))
+		# plt.grid(True)
+		plt.savefig(self.args.out_folder + "metrics_vs_concepts_plot.png")
+		plt.show()
 
 	def evaluateDataset(self):
 		"""
@@ -168,6 +212,8 @@ class SearchEngine:
 		- produces graphs of the evaluation metrics in the output folder
 		"""
 
+		start_time = time.time()
+
 		# Read queries
 		queries_json = json.load(open(args.dataset + "cran_queries.json", 'r'))[:]
 		query_ids, queries = [item["query number"] for item in queries_json], \
@@ -175,16 +221,17 @@ class SearchEngine:
 		# Process queries 
 		processedQueries = self.preprocessQueries(queries)
 
-		# spellcheck queries
-		# spellcheckedQueries = self.spellCheckQueries(processedQueries)
+		# spellcheck queries, default False
+		# Tt takes > 5mins, and the queries do not have any spelling errors
+		processedQueries = self.spellCheckQueries(processedQueries) 
 
 		# Expand queries
-		# processedQueries = self.expandQueries(processedQueries)
+		processedQueries = self.expandQueries(processedQueries)
 
 		# Read documents
 		docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
 		doc_ids, docs = [item["id"] for item in docs_json], \
-          [(item["body"] + (". " + item["title"])) for item in docs_json]
+          [(item["body"] + ". " + ". ".join([item["title"]] * 3)) for item in docs_json]
 		# Process documents
 		processedDocs = self.preprocessDocs(docs)
 
@@ -292,12 +339,12 @@ if __name__ == "__main__":
 	parser.add_argument('-concepts',
                       default= "300",
                       help="concepts used by lsa")
-	parser.add_argument('-query_expansion',
+	parser.add_argument('-qexpand',
 					  default= "True",
 					  help="Perform Query Expansion")
 	parser.add_argument('-spellcheck',
 					  default= "False",
-					  help="Perform Spellcheck")
+					  help="Perform Spellcheck, not recommended unless used with custom queries, cranfiled queries do not have spelling errors")
 	parser.add_argument('-build_embeddings',
 					  default= "True",
 					  help="Build Glove Embeddings")
@@ -313,3 +360,5 @@ if __name__ == "__main__":
 		searchEngine.handleCustomQuery()
 	else:
 		searchEngine.evaluateDataset()
+
+	# searchEngine.plotMetricsByConcepts()

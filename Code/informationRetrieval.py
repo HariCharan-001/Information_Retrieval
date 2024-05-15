@@ -9,7 +9,7 @@ class InformationRetrieval():
     def __init__(self):
         self.index = None
 
-    def buildIndex(self, docs, docIDs, ngram_range, concepts=0):
+    def buildIndex(self, docs, docIDs, ngram_range=(1,1), concepts=0):
         """
         Builds the document index in terms of the document
         IDs and stores it in the 'index' class variable
@@ -24,7 +24,7 @@ class InformationRetrieval():
         -------
         None
         """
-        self.tfidf_vectorizer = TfidfVectorizer(ngram_range=ngram_range)
+        self.tfidf_vectorizer = TfidfVectorizer(ngram_range=(1,1))
         all_docs_combined = []
         for document in docs:
             all_sentences_combined = []
